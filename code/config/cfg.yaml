@@ -1,0 +1,9 @@
+hf_data_path: "sh0416/ag_news"
+data_file_path: "./test_data.txt"
+spark_application_name: "word_count"
+spark_master: "local"
+unique_filter_words:
+  - "president"
+  - "the"
+  - "Asia"
+spark_mode: "overwrite"

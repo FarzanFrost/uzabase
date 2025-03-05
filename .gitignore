@@ -1,0 +1,5 @@
+env.sh
+/venv
+*/ztmp
+
+*/test_data.txt
