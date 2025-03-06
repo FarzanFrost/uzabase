@@ -1,48 +1,52 @@
-name: Build Docker Image
+name: Build and Run with Docker Compose
 
 on:
   push:
     branches:
-      - '*'  # Trigger build on push to the main branch
+      - '*'
   pull_request:
     branches:
-      - '*'  # Trigger build on pull request to the main branch
+      - '*'
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2  # Checkout the code from the repository
+      uses: actions/checkout@v4  # Checkout code
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose  # Install Docker Compose
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2  # Set up Docker Buildx for advanced build features
+      uses: docker/setup-buildx-action@v2
 
     - name: Cache Docker layers
-      uses: actions/cache@v4  # Cache Docker layers to speed up subsequent builds
+      uses: actions/cache@v4
       with:
-        path: /tmp/.buildx-cache  # Define the cache path
+        path: /tmp/.buildx-cache
         key: ${{ runner.os }}-build-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-build-
 
-    - name: Build Docker image
-      run: |
-        docker build --file Dockerfile --tag myapp:${{ github.sha }} .  # Build Docker image with a tag of the current commit SHA
+    - name: Build Docker images with Docker Compose
+      run: docker-compose -f docker-compose.yaml build  # Builds all services
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2  # Log in to Docker Hub (or other Docker registries)
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username stored as a secret
-        password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password stored as a secret
+    - name: Start services using Docker Compose
+      run: docker-compose -f docker-compose.yaml up -d  # Start services in detached mode
 
-    - name: Push Docker image to Docker Hub
+    - name: Wait for Services to Start
       run: |
-        docker tag myapp:${{ github.sha }} myusername/myapp:${{ github.sha }}  # Tag the image
-        docker push myusername/myapp:${{ github.sha }}  # Push the image to Docker Hub
-      if: success()  # Push image only if the build was successful
+        sleep 20  # Give time for services to start
+        docker ps  # Check running containers
 
-    - name: Clean up Docker images
-      run: |
-        docker rmi myapp:${{ github.sha }}  # Remove the local image after push
+    # - name: Run Tests (Optional)
+    #   run: |
+    #     docker exec spark-master python src/run.py process_data -cfg config/cfg.yaml -dataset news -dirout "ztmp/data/"
+    #     docker exec spark-master python src/run.py process_data_all -cfg config/cfg.yaml -dataset news -dirout "ztmp/data/"
+
+    - name: Stop and Clean Up
+      run: docker-compose -f docker-compose.yaml down  # Stop and remove containers
