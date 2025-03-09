@@ -11,9 +11,6 @@ RUN pip3 install --no-cache-dir onnxruntime spacy seqeval gensim numba sqlalchem
 RUN pip3 install --no-cache-dir transformers accelerate 
 RUN pip3 install --no-cache-dir datasets
 
-# Switch back to the Spark user for security
-# USER 1001
-
 # Set working directory
 WORKDIR /code
 
