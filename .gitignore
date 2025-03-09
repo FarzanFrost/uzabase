@@ -4,3 +4,5 @@ env.sh
 
 */test_data.txt
 *__pycache__*
+
+/screen_shots
