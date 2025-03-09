@@ -36,7 +36,8 @@ class CountWords:
     def preprocess_data(text: str) -> str:
         """
         Does Preprocessing for each text line pass from the news dataset file.
-        Removes trialing fullstops, commas, dashes, and adds a new line at the end of the text.
+        Removes trialing fullstops, commas, dashes, single and double quotes.
+        And adds a new line at the end of the text.
 
         Args:
             text (str): text line from dataset.
@@ -52,6 +53,10 @@ class CountWords:
 
         # Remove Dashes.
         text = text.replace('-', '')
+
+        # Removes single and double quotes
+        text = text.replace("'", "")
+        text = text.replace('"', '')
 
         # Add newline and return.
         return text + "\n"
