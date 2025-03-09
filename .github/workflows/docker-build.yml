@@ -28,9 +28,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-build-${{ github.sha }}
+        key: ${{ runner.os }}-docker-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-build-
+          ${{ runner.os }}-docker-build
 
     - name: Build Docker images with Docker Compose
       run: docker-compose -f docker-compose.yaml build  # Builds all services
@@ -42,11 +42,6 @@ jobs:
       run: |
         sleep 20  # Give time for services to start
         docker ps  # Check running containers
-
-    # - name: Run Tests (Optional)
-    #   run: |
-    #     docker exec spark-master python src/run.py process_data -cfg config/cfg.yaml -dataset news -dirout "ztmp/data/"
-    #     docker exec spark-master python src/run.py process_data_all -cfg config/cfg.yaml -dataset news -dirout "ztmp/data/"
 
     - name: Stop and Clean Up
       run: docker-compose -f docker-compose.yaml down  # Stop and remove containers
