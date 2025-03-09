@@ -1,0 +1,47 @@
+name: Build and Run with Docker Compose
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4  # Checkout code
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose  # Install Docker Compose
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-docker-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-docker-build
+
+    - name: Build Docker images with Docker Compose
+      run: docker-compose -f docker-compose.yaml build  # Builds all services
+
+    - name: Start services using Docker Compose
+      run: docker-compose -f docker-compose.yaml up -d  # Start services in detached mode
+
+    - name: Wait for Services to Start
+      run: |
+        sleep 20  # Give time for services to start
+        docker ps  # Check running containers
+
+    - name: Stop and Clean Up
+      run: docker-compose -f docker-compose.yaml down  # Stop and remove containers
